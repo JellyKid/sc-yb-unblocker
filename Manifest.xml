@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtensionManifest>
+	<Version>1.43.22</Version>
+	<Name>Command Toolbox</Name>
+	<Author>ScreenConnect Labs</Author>
+	<ShortDescription>Adds a Toolbox to the right-click menu from where configurable commands can be sent to remote machines.</ShortDescription>
+	<Components>
+		<ClientScriptInitializer SourceFile="OldInitializer.js" MaxProductVersionExclusive="5.4" />
+		<ClientScriptInitializer SourceFile="Initializer.js"  MinProductVersionInclusive="5.4" />
+		<WebServiceReference SourceFile="Service.ashx" />
+		<WebResourcesDefinition SourceFile="Web.en-US.resx" />
+	</Components>
+	<Settings>
+		<Setting Name="CommandName1" IsServerOnly="false">
+			<DefaultValue>Command 1</DefaultValue>
+		</Setting>
+		<Setting Name="Command1" IsServerOnly="false" />
+		<Setting Name="CommandName2" IsServerOnly="false">
+			<DefaultValue>Command 2</DefaultValue>
+		</Setting>
+		<Setting Name="Command2" IsServerOnly="false" />
+		<Setting Name="CommandName3" IsServerOnly="false">
+			<DefaultValue>Command 3</DefaultValue>
+		</Setting>
+		<Setting Name="Command3" IsServerOnly="false" />
+		<Setting Name="CommandName4" IsServerOnly="false">
+			<DefaultValue>Command 4</DefaultValue>
+		</Setting>
+		<Setting Name="Command4" IsServerOnly="false" />
+		<Setting Name="CommandName5" IsServerOnly="false">
+			<DefaultValue>Command 5</DefaultValue>
+		</Setting>
+		<Setting Name="Command5" IsServerOnly="false" />
+		<Setting Name="CommandName6" IsServerOnly="false">
+			<DefaultValue>Command 6</DefaultValue>
+		</Setting>
+		<Setting Name="Command6" IsServerOnly="false" />
+		<Setting Name="CommandName7" IsServerOnly="false">
+			<DefaultValue>Command 7</DefaultValue>
+		</Setting>
+		<Setting Name="Command7" IsServerOnly="false" />
+		<Setting Name="CommandName8" IsServerOnly="false">
+			<DefaultValue>Command 8</DefaultValue>
+		</Setting>
+		<Setting Name="Command8" IsServerOnly="false" />
+		<Setting Name="CommandName9" IsServerOnly="false">
+			<DefaultValue>Command 9</DefaultValue>
+		</Setting>
+		<Setting Name="Command9" IsServerOnly="false" />
+		<Setting Name="CommandName10" IsServerOnly="false">
+			<DefaultValue>Command 10</DefaultValue>
+		</Setting>
+		<Setting Name="Command10" IsServerOnly="false" />
+	</Settings>
+</ExtensionManifest>
