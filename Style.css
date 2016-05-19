@@ -1,3 +1,12 @@
-.ModalDialog.CommandToolbox > *{
+.ModalDialog.UnblockCard > *
+{
 	width: 500px;
+}
+
+.UnblockCard input {
+	margin-bottom: 10px;
+}
+
+.unblockError {
+	color: red;
 }

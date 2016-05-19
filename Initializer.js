@@ -1,110 +1,143 @@
-/*
-http://forum.screenconnect.com/yaf_postsm33047_Extension--Command-Toolbox.aspx#post33047
-multi line saved commands
-*/
-SC.util.includeStyleSheet(extensionContext.baseUrl + 'Style.css');
-
 SC.event.addGlobalHandler(SC.event.QueryCommandButtons, function (eventArgs) {
 	switch (eventArgs.area) {
+		case 'HostDetailPanel':
 		case 'HostDetailPopoutPanel':
-			//if (window.isCommandEnabled("RunCommand", null, [eventArgs.session], eventArgs.session.Permissions))
-				eventArgs.buttonDefinitions.push(
-					{commandName: 'Select', commandArgument: 'OpenCommandToolbox', text: SC.res['CommandToolbox.DetailPopout.Modal']}
-				);
+			eventArgs.buttonDefinitions.push({
+        commandName: 'UnblockCard',
+        className: 'NeverOverFlow',
+        text: 'Unblock Card'
+      });
 			break;
 	}
 });
 
-SC.event.addGlobalHandler(SC.event.ExecuteCommand, function (eventArgs){
-	switch (eventArgs.commandArgument) {
-		case 'OpenCommandToolbox':
-				SC.dialog.showModalButtonDialog('CommandToolbox', SC.res['CommandToolbox.Modal.Title'], SC.res['CommandToolbox.Modal.RunCommand'], 'Default',
-				function(container){
-					SC.ui.addElement(container, 'P', SC.res['CommandToolbox.Modal.Instruction']);
-					var selector = SC.ui.createElement('SELECT', {id: 'commandSelector'});
-					var commandText = SC.ui.createElement('TextArea', {id: 'commandText'});
-					var commands = getCommandNamesAndValues();
+SC.event.addGlobalHandler(SC.event.ExecuteCommand, function(eventArgs){
 
-					var saveCommand = SC.ui.createElement('INPUT', {id: 'saveCommand', type: 'BUTTON', value: SC.res['CommandToolbox.Modal.SaveButton']});
-					var saveStatusField = SC.ui.createElement('SPAN', {id: 'saveStatus'});
+	switch (eventArgs.commandName) {
+		case 'UnblockCard':
+			SC.util.includeStyleSheet(extensionContext.baseUrl + 'Style.css');
 
-					Array.prototype.forEach.call(commands, function(c){
-						var option = document.createElement('option');
-						option.value = c.value.toString();
-						option.text = c.name;
-						selector.appendChild(option);
+      SC.dialog.showModalButtonDialog('UnblockCard',"Unblock Smart Card","Unblock","Default",
+      function(container){
+
+
+        SC.ui.addElement(container, 'P', 'Please put in admin pin twice to unblock the card');
+        var pukInputText = SC.ui.createElement('SPAN', "PIN: ");
+        var pukInput = SC.ui.createElement('INPUT', {id: 'puk', type: 'PASSWORD'});
+
+        var pukInputText2 = SC.ui.createElement('SPAN', "PIN: ");
+        var pukInput2 = SC.ui.createElement('INPUT', {id: 'puk2', type: 'PASSWORD'});
+
+        var puk = SC.ui.createElement('DIV');
+
+        SC.ui.addContent(puk,pukInputText);
+        SC.ui.addContent(puk,pukInput);
+        SC.ui.addContent(container,puk);
+
+        var puk2 = SC.ui.createElement('DIV');
+
+        SC.ui.addContent(puk2,pukInputText2);
+        SC.ui.addContent(puk2,pukInput2);
+        SC.ui.addContent(container,puk2);
+
+        var unblockMessage = SC.ui.createElement('DIV', {id: 'unblockMessage'});
+        SC.ui.addContent(container,unblockMessage);
+
+      },
+      function(eventArgs) {
+				//reset message
+				$('unblockMessage').innerHTML = "";
+				SC.css.ensureClass($('unblockMessage'), 'unblockError', false);
+				if($('puk').value == $('puk2').value){
+					//start unblock attempt
+					unblockSmartCard($('puk').value,function(err,res){
+						if(err){
+							SC.css.ensureClass($('unblockMessage'), 'unblockError', true);
+							$('unblockMessage').innerHTML = "Error: " + err;
+						} else {
+							$('unblockMessage').innerHTML = res;
+						}
 					});
-
-					selector.onchange = function () {
-						commandText.value = getSelectedItemText();
-					};
-
-					commandText.value = commands[0].value;
-
-					SC.ui.addContent(container, selector);
-					SC.ui.addContent(container, commandText);
-
-					SC.ui.addContent(container, saveCommand);
-					SC.ui.addContent(container, saveStatusField);
-
-					saveCommand.onclick =  function() {
-						$('saveStatus').innerHTML = SC.res['CommandToolbox.Modal.Saving'];
-						var position = $('commandSelector').selectedIndex + 1;
-						var commandName = $('commandSelector').options[$('commandSelector').selectedIndex].text;
-						SC.service.SaveExtensionCommandSetting(commandName, position, commandText.value, function(ret) {
-							$('saveStatus').innerHTML = SC.res['CommandToolbox.Modal.Saved'];
-							$('saveStatus').className = 'Success';
-						});
-					};
-				},
-				function (eventArgs) {
-					var allRows = $('detailTable').rows;
-					var commandRows = Array.prototype.filter.call(allRows, function (r) { return SC.ui.isSelected(r); });
-					var sessions = Array.prototype.map.call(commandRows, function (r) {return r._dataItem; });
-					var sessionIDs = Array.prototype.map.call(sessions, function (s) { return s.SessionID; });
-
-					var chosenCommand = $('commandText').value;
-
-					//window.getSessionGroupUrlPart()[0] different from <5.3
-					window.addEventToSessions(window.getSessionGroupUrlPart()[0],
-						SC.types.SessionType.Access,
-						sessionIDs,
-						SC.types.SessionEventType.QueuedCommand,
-						null,
-						chosenCommand,
-						false,
-						false,
-						true
-					);
-					SC.dialog.hideModalDialog();
-				});
-			break;
+				} else {
+					SC.css.ensureClass($('unblockMessage'), 'unblockError', true);
+					$('unblockMessage').innerHTML = "Error: PINs do not match!";
+				}
+      }
+    );
 	}
 });
 
-function getSelectedItemText() {
-	return $('commandSelector').options[$('commandSelector').selectedIndex].value;
+function unblockSmartCard(puk, cb) {
+	var allRows = $('detailTable').rows;
+	var commandRows = Array.prototype.filter.call(allRows, function (r) { return SC.ui.isSelected(r); });
+	if(commandRows.length > 1){
+		return cb("The unblock command can only be run on one computer at a time. Please select only one computer.");
+	}
+	if(commandRows.length < 1){
+		return cb("You must select a computer to unblock.")
+	}
+
+	var session = commandRows[0]._dataItem;
+
+	var pathToExe = extensionContext.settingValues["Path to yubico-piv-tool.exe"];
+	var pin = extensionContext.settingValues["Default PIN"];
+
+	var command = '"' + pathToExe + '" -a "unblock-pin"' + ' -P ' + puk + ' -N ' + pin + '"';
+	// var command = '"' + pathToExe + '" -a "status"';
+
+	SC.service.AddEventToSessions(
+		window.getSessionGroupUrlPart()[0],
+		[session.SessionID],
+		SC.types.SessionEventType.QueuedCommand,
+		command,
+		function(success){
+			$('unblockMessage').innerHTML = "Attempting unblock... please wait"
+
+			getLastCommandData(session, function(err,res){
+				if(err){return cb(err)};
+				checkUnblockSuccess(res,function(err, res){
+					if(err){return cb(err)};
+					return cb(null, res);
+				})
+			});
+
+		},
+		function(fail){
+			console.error(fail);
+			return cb("Failed to send unblock command. Is the session connected?");
+		}
+	);
 }
 
-function getCommandNamesAndValues() {
-	var commandsToReturn = [];
-	var commands = [
-		{'name' : extensionContext.settingValues.CommandName1, 'value' : extensionContext.settingValues.Command1},
-		{'name' : extensionContext.settingValues.CommandName2, 'value' : extensionContext.settingValues.Command2},
-		{'name' : extensionContext.settingValues.CommandName3, 'value' : extensionContext.settingValues.Command3},
-		{'name' : extensionContext.settingValues.CommandName4, 'value' : extensionContext.settingValues.Command4},
-		{'name' : extensionContext.settingValues.CommandName5, 'value' : extensionContext.settingValues.Command5},
-		{'name' : extensionContext.settingValues.CommandName6, 'value' : extensionContext.settingValues.Command6},
-		{'name' : extensionContext.settingValues.CommandName7, 'value' : extensionContext.settingValues.Command7},
-		{'name' : extensionContext.settingValues.CommandName8, 'value' : extensionContext.settingValues.Command8},
-		{'name' : extensionContext.settingValues.CommandName9, 'value' : extensionContext.settingValues.Command9},
-		{'name' : extensionContext.settingValues.CommandName10, 'value' : extensionContext.settingValues.Command10}
-	];
-	Array.prototype.forEach.call(commands, function(c) {
-		if (c.value !== ''){
-			commandsToReturn.push(c);
-		}
-	});
+function getLastCommandData(session,cb) {
 
-	return commandsToReturn;
+	var current = Date.now();
+
+	var checkInt = window.setInterval(function(){
+		var sortedEvents = _cache[session.SessionID + 'SortedEvents'] || null;
+		if(sortedEvents){
+			var lastEvent = sortedEvents.item[sortedEvents.item.length - 1];
+			if(lastEvent.eventType === 70){
+				window.clearInterval(checkInt);
+				cb(null, lastEvent.data);
+			}
+		}
+
+		var timeout = Date.now() - current;
+
+		if(timeout > 30000){
+			window.clearInterval(checkInt);
+			cb("Command timed out");
+		}
+	},2000);
+}
+
+function checkUnblockSuccess(output,cb) {
+	var success = /Successfully unblocked the pin code./.exec(output);
+	if(success){
+		return cb(null, success[0] + " The pin is now set to " + extensionContext.settingValues["Default PIN"]);
+	} else {
+		var err = output.split('\n').splice(2);
+		return cb(err.join('<br>'));
+	}
 }

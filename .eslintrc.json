@@ -1,0 +1,10 @@
+{
+  "env": {
+    "browser": true
+  },
+  "globals": {
+    "SC": false,
+    "$": false,
+    "extensionContext": false
+  }
+}
