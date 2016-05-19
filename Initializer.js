@@ -74,7 +74,7 @@ function unblockSmartCard(puk, cb) {
 		return cb("The unblock command can only be run on one computer at a time. Please select only one computer.");
 	}
 	if(commandRows.length < 1){
-		return cb("You must select a computer to unblock.")
+		return cb("You must select a computer to unblock.");
 	}
 
 	var session = commandRows[0]._dataItem;
@@ -91,14 +91,14 @@ function unblockSmartCard(puk, cb) {
 		SC.types.SessionEventType.QueuedCommand,
 		command,
 		function(success){
-			$('unblockMessage').innerHTML = "Attempting unblock... please wait"
+			$('unblockMessage').innerHTML = "Attempting unblock... please wait";
 
 			getLastCommandData(session, function(err,res){
-				if(err){return cb(err)};
+				if(err){return cb(err);}
 				checkUnblockSuccess(res,function(err, res){
-					if(err){return cb(err)};
+					if(err){return cb(err);}
 					return cb(null, res);
-				})
+				});
 			});
 
 		},

@@ -5,6 +5,7 @@
   "globals": {
     "SC": false,
     "$": false,
-    "extensionContext": false
+    "extensionContext": false,
+    "_cache": false
   }
 }
