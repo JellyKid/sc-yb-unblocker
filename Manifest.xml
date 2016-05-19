@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ExtensionManifest>
 	<Version>1.0.0</Version>
-	<Name>Unblock Yubikey PIV Extension</Name>
+	<Name>Yubikey Unblocker</Name>
 	<Author>Jacob Sommerville</Author>
 	<ShortDescription>Adds unblock button to unblock yubikey PIV smartcards.</ShortDescription>
 	<Components>
